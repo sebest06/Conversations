@@ -1,1 +1,2 @@
+include ':emoji', ':emoji-google'
 rootProject.name = 'Conversations'
