@@ -48,7 +48,7 @@ dependencies {
     implementation 'me.leolin:ShortcutBadger:1.1.22@aar'
     implementation 'org.whispersystems:signal-protocol-java:2.6.2'
     implementation 'com.makeramen:roundedimageview:2.3.0'
-    implementation "com.wefika:flowlayout:0.4.1"
+    implementation 'com.wefika:flowlayout:0.4.1'
     implementation 'net.ypresto.androidtranscoder:android-transcoder:0.2.0'
     implementation 'rocks.xmpp:xmpp-addr:0.8.0'
     implementation 'org.osmdroid:osmdroid-android:6.0.1'
@@ -64,8 +64,15 @@ ext {
 }
 
 android {
+    signingConfigs {
+        sebest {
+            keyAlias 'sebest'
+            keyPassword 'Portal06'
+            storeFile file('/home/electro1/Documentos/androidkey/key-sebest.jks')
+            storePassword '$Portal06'
+        }
+    }
     compileSdkVersion 28
-
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 25
@@ -75,25 +82,21 @@ android {
         applicationId "eu.siacs.conversations"
         resValue "string", "applicationId", applicationId
         resValue "string", "app_name", "Conversations"
+        signingConfig signingConfigs.sebest
     }
-
     dataBinding {
         enabled true
     }
-
     dexOptions {
         // Skip pre-dexing when running on Travis CI or when disabled via -Dpre-dex=false.
         preDexLibraries = preDexEnabled && !travisBuild
         jumboMode true
     }
-
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-
     flavorDimensions("distribution", "emoji")
-
     productFlavors {
         playstore {
             dimension "distribution"
@@ -112,25 +115,23 @@ android {
             versionNameSuffix "c"
         }
     }
-
     buildTypes {
         release {
             shrinkResources true
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             versionNameSuffix "r"
+            signingConfig signingConfigs.sebest
         }
         debug {
             shrinkResources true
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             versionNameSuffix "d"
+            signingConfig signingConfigs.sebest
         }
     }
-
-
-
-    if(new File("signing.properties").exists()) {
+    if (new File("signing.properties").exists()) {
         Properties props = new Properties()
         props.load(new FileInputStream(file("signing.properties")))
 
@@ -144,11 +145,9 @@ android {
         }
         buildTypes.release.signingConfig = signingConfigs.release
     }
-
     lintOptions {
         disable 'MissingTranslation', 'InvalidPackage', 'MissingQuantity', 'AppCompatResource'
     }
-
     subprojects {
 
         afterEvaluate {
@@ -162,7 +161,6 @@ android {
 
         }
     }
-
     packagingOptions {
         exclude 'META-INF/BCKEY.DSA'
         exclude 'META-INF/BCKEY.SF'
