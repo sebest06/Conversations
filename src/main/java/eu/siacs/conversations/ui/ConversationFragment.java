@@ -139,6 +139,7 @@ public class ConversationFragment extends XmppFragment implements EditMessage.Ke
     public static final int REQUEST_TRUST_KEYS_ATTACHMENTS = 0x0209;
     public static final int REQUEST_START_DOWNLOAD = 0x0210;
     public static final int REQUEST_ADD_EDITOR_CONTENT = 0x0211;
+    public static final int REQUEST_COMMIT_ATTACHMENTS = 0x0212;
     public static final int ATTACHMENT_CHOICE_CHOOSE_IMAGE = 0x0301;
     public static final int ATTACHMENT_CHOICE_TAKE_PHOTO = 0x0302;
     public static final int ATTACHMENT_CHOICE_CHOOSE_FILE = 0x0303;
@@ -740,7 +741,7 @@ public class ConversationFragment extends XmppFragment implements EditMessage.Ke
             return;
         }
         final Editable text = this.binding.textinput.getText();
-        final String body =  text == null ? "" : text.toString();
+        final String body = text == null ? "" : text.toString();
         final Conversation conversation = this.conversation;
         if (body.length() == 0 || conversation == null) {
             return;
@@ -878,6 +879,9 @@ public class ConversationFragment extends XmppFragment implements EditMessage.Ke
     }
 
     private void commitAttachments() {
+        if (!hasPermissions(REQUEST_COMMIT_ATTACHMENTS, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            return;
+        }
         if (conversation.getNextEncryption() == Message.ENCRYPTION_AXOLOTL && trustKeysIfNeeded(REQUEST_TRUST_KEYS_ATTACHMENTS)) {
             return;
         }
@@ -1439,16 +1443,23 @@ public class ConversationFragment extends XmppFragment implements EditMessage.Ke
     public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
         if (grantResults.length > 0) {
             if (allGranted(grantResults)) {
-                if (requestCode == REQUEST_START_DOWNLOAD) {
-                    if (this.mPendingDownloadableMessage != null) {
-                        startDownloadable(this.mPendingDownloadableMessage);
-                    }
-                } else if (requestCode == REQUEST_ADD_EDITOR_CONTENT) {
-                    if (this.mPendingEditorContent != null) {
-                        attachEditorContentToConversation(this.mPendingEditorContent);
-                    }
-                } else {
-                    attachFile(requestCode);
+                switch (requestCode) {
+                    case REQUEST_START_DOWNLOAD:
+                        if (this.mPendingDownloadableMessage != null) {
+                            startDownloadable(this.mPendingDownloadableMessage);
+                        }
+                        break;
+                    case REQUEST_ADD_EDITOR_CONTENT:
+                        if (this.mPendingEditorContent != null) {
+                            attachEditorContentToConversation(this.mPendingEditorContent);
+                        }
+                        break;
+                    case REQUEST_COMMIT_ATTACHMENTS:
+                        commitAttachments();
+                        break;
+                    default:
+                        attachFile(requestCode);
+                        break;
                 }
             } else {
                 @StringRes int res;
@@ -1467,6 +1478,7 @@ public class ConversationFragment extends XmppFragment implements EditMessage.Ke
             if (activity != null && activity.xmppConnectionService != null) {
                 activity.xmppConnectionService.restartFileObserver();
             }
+            refresh();
         }
     }
 
@@ -2084,7 +2096,7 @@ public class ConversationFragment extends XmppFragment implements EditMessage.Ke
 
     private List<Uri> cleanUris(List<Uri> uris) {
         Iterator<Uri> iterator = uris.iterator();
-        while(iterator.hasNext()) {
+        while (iterator.hasNext()) {
             final Uri uri = iterator.next();
             if (FileBackend.weOwnFile(getActivity(), uri)) {
                 iterator.remove();
@@ -2562,7 +2574,7 @@ public class ConversationFragment extends XmppFragment implements EditMessage.Ke
                     public void error(final int error, Message message) {
                         getActivity().runOnUiThread(() -> {
                             doneSendingPgpMessage();
-                            Toast.makeText(getActivity(), R.string.unable_to_connect_to_keychain, Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getActivity(), error == 0 ? R.string.unable_to_connect_to_keychain : error, Toast.LENGTH_SHORT).show();
                         });
 
                     }
@@ -2589,9 +2601,9 @@ public class ConversationFragment extends XmppFragment implements EditMessage.Ke
             return;
         }
         final Editable editable = this.binding.textinput.getText();
-        String previous =  editable == null ? "" : editable.toString();
+        String previous = editable == null ? "" : editable.toString();
         if (doNotAppend && !TextUtils.isEmpty(previous)) {
-            Toast.makeText(getActivity(),R.string.already_drafting_message, Toast.LENGTH_LONG).show();
+            Toast.makeText(getActivity(), R.string.already_drafting_message, Toast.LENGTH_LONG).show();
             return;
         }
         if (UIHelper.isLastLineQuote(previous)) {
