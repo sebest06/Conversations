@@ -1,5 +1,17 @@
 # Changelog
 
+### Version 2.3.8
+* make PEP avatars public to play nice with Prosody 0.11
+* Fixed re-sending failed files in group chats
+
+### Version 2.3.7
+* long press on 'allow' or 'add back' snackbar to bring up 'reject'
+* bug fixes for Android 9
+
+### Version 2.3.6
+* Improved handling of bookmark nicks
+* Show send PM menu entry in anonymous MUCs
+
 ### Version 2.3.5
 * Fixed group chat mentions when nick ends in . (dot)
 * Fixed Conversations not asking for permissions after direct share

@@ -28,13 +28,6 @@
         </menu>
     </item>
     <item
-        android:id="@+id/action_hide_contact"
-        android:checkable="true"
-        android:checked="false"
-        android:orderInCategory="10"
-        app:showAsAction="never"
-        android:title="@string/action_hide_contact"/>
-    <item
         android:id="@+id/action_delete_contact"
         android:orderInCategory="10"
         app:showAsAction="never"
@@ -57,6 +50,11 @@
         android:orderInCategory="90"
         app:showAsAction="never"
         android:title="@string/action_accounts"/>
+    <item
+        android:id="@+id/action_account"
+        android:orderInCategory="90"
+        android:title="@string/action_account"
+        app:showAsAction="never"/>
     <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"

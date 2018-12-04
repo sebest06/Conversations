@@ -46,6 +46,7 @@ import eu.siacs.conversations.ui.util.Attachment;
 import eu.siacs.conversations.ui.util.GridManager;
 import eu.siacs.conversations.ui.util.JidDialog;
 import eu.siacs.conversations.ui.util.MenuDoubleTabUtil;
+import eu.siacs.conversations.utils.AccountUtils;
 import eu.siacs.conversations.utils.Compatibility;
 import eu.siacs.conversations.utils.IrregularUnicodeDetector;
 import eu.siacs.conversations.utils.UIHelper;
@@ -76,7 +77,7 @@ public class ContactDetailsActivity extends OmemoActivity implements OnAccountUp
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
             if (isChecked) {
                 if (contact.getOption(Contact.Options.PENDING_SUBSCRIPTION_REQUEST)) {
-                    xmppConnectionService.sendPresencePacket(contact.getAccount(), xmppConnectionService.getPresenceGenerator().sendPresenceUpdatesTo(contact));
+                    xmppConnectionService.stopPresenceUpdatesTo(contact);
                 } else {
                     contact.setOption(Contact.Options.PREEMPTIVE_GRANT);
                 }
@@ -240,10 +241,6 @@ public class ContactDetailsActivity extends OmemoActivity implements OnAccountUp
             case R.id.action_share_uri:
                 shareLink(false);
                 break;
-            case R.id.action_hide_contact:
-                contact.setHideContact(!menuItem.isChecked());
-                invalidateOptionsMenu();
-                break;
             case R.id.action_delete_contact:
                 builder.setTitle(getString(R.string.action_delete_contact))
                         .setMessage(JidDialog.style(this, R.string.remove_contact_text, contact.getJid().toEscapedString()))
@@ -284,13 +281,12 @@ public class ContactDetailsActivity extends OmemoActivity implements OnAccountUp
     @Override
     public boolean onCreateOptionsMenu(final Menu menu) {
         getMenuInflater().inflate(R.menu.contact_details, menu);
+        AccountUtils.showHideMenuItems(menu);
         MenuItem block = menu.findItem(R.id.action_block);
         MenuItem unblock = menu.findItem(R.id.action_unblock);
         MenuItem edit = menu.findItem(R.id.action_edit_contact);
         MenuItem delete = menu.findItem(R.id.action_delete_contact);
-        MenuItem hide = menu.findItem(R.id.action_hide_contact);
 
-        hide.setChecked(contact.getHideContact());
 
         if (contact == null) {
             return true;
